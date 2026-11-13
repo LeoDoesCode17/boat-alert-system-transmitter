@@ -14,6 +14,7 @@
 
 constexpr unsigned long UPDATE_INTERVAL_MS = 500;
 unsigned long lastUpdate = 0;
+char mac[lora::MAC_STR_LEN] = "UNKNOWN"; // filled in setup()
 
 void scanI2C()
 {
@@ -37,14 +38,13 @@ void scanI2C()
 void sendTelemetry()
 {
   const mpu9250::Data &d = mpu9250::data();
-
   char payload[lora::MAX_PAYLOAD_LEN];
   const int n = snprintf(payload, sizeof(payload),
-                         "R:%.2f,P:%.2f,Y:%.2f,LAT:%.6f,LON:%.6f,FIX:%d,S:%d",
+                         "R:%.2f,P:%.2f,Y:%.2f,LAT:%.6f,LON:%.6f,FIX:%d,S:%d,MAC:%s",
                          d.roll, d.pitch, d.yaw,
                          gps::latitude(), gps::longitude(),
                          gps::isUsingDefaultLocation() ? 0 : 1,
-                         mpu9250::isDanger() ? 1 : 0);
+                         mpu9250::isDanger() ? 1 : 0, mac);
   if (n <= 0 || (size_t)n >= sizeof(payload))
   {
     Serial.println(F("[LORA] Payload formatting failed/truncated"));
@@ -111,6 +111,10 @@ void setup()
   }
 
   lora::begin(); // failure is reported on the status screen, not fatal
+  if (!lora::get_mac_address(mac, sizeof(mac)))
+  {
+    Serial.println(F("[LORA] Could not read MAC address"));
+  }
 
   Serial.println(F("Setup complete."));
   delay(500);
