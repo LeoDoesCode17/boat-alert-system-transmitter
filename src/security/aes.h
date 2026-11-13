@@ -5,7 +5,17 @@
 
 namespace aes
 {
-    void initialize();
+    // Loads the AES key from flash (NVS) into RAM.
+    // - key exists in flash  -> just load it
+    // - no (valid) key       -> write the key from secret.h to flash, then use it
+    // Must be called once at startup, before encrypt()/decrypt().
+    // Returns false on failure (encrypt()/decrypt() then refuse to run).
+    bool initialize();
+
+    // Erases the key stored in flash and re-provisions it from secret.h.
+    // Use this after you change the key in secret.h.
+    bool reset_key();
+
     bool encrypt(
         const uint8_t *plaintext,
         size_t plaintext_len,
