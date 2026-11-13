@@ -18,7 +18,7 @@ namespace lora
     constexpr uint8_t DEVICE_ID = 0xA1;
 
     // Max plaintext size (length is sent as a single byte).
-    constexpr size_t MAX_PAYLOAD_LEN = 128;
+    constexpr size_t MAX_PAYLOAD_LEN = 192;
 
     // Returns false (and does not halt) if the radio isn't found.
     bool begin();
@@ -27,4 +27,12 @@ namespace lora
     // Encrypts with AES-128-GCM and transmits.
     // Packet: [aad(2)][nonce][len(1)][ciphertext][tag]
     bool sendEncrypted(const uint8_t *plaintext, size_t len);
+
+    // Device MAC as "AA:BB:CC:DD:EE:FF" plus the terminating '\0'.
+    constexpr size_t MAC_STR_LEN = 18;
+
+    // Copies the device MAC string into `out`. `out_len` must be >= MAC_STR_LEN.
+    // Returns false (and leaves `out` untouched) if the buffer is too small.
+    // Safe to call at any time, including repeatedly from the UI.
+    bool get_mac_address(char *out, size_t out_len);
 } // namespace lora
