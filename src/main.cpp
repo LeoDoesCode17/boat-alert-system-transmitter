@@ -6,6 +6,7 @@
 #include "sensors/gps.h"
 #include "sensors/mpu9250.h"
 #include "networks/lora.h"
+#include "security/aes.h"
 
 // ---- I2C pins: ESP32-C3 Super Mini default I2C ----
 #define I2C_SDA 8
@@ -102,6 +103,13 @@ void setup()
   delay(1500); // let the result be readable
 
   gps::begin();
+  // Load the AES key from flash (provisions it from secret.h on first boot).
+  // Must run before any lora::sendEncrypted() call.
+  if (!aes::initialize())
+  {
+    Serial.println(F("[AES] Init failed - encrypted TX will not work."));
+  }
+
   lora::begin(); // failure is reported on the status screen, not fatal
 
   Serial.println(F("Setup complete."));
