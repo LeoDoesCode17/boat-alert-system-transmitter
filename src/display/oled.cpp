@@ -85,15 +85,25 @@ namespace oled
 
         void drawStatus()
         {
+            // "NOT CONNECTED" would make these lines 22 chars (> 21 that fit on a
+            // 128 px wide screen at size 1) and wrap, pushing the MAC off-screen.
+            char mac[lora::MAC_STR_LEN];
+            if (!lora::get_mac_address(mac, sizeof(mac)))
+            {
+                snprintf(mac, sizeof(mac), "UNKNOWN");
+            }
+
             display.clearDisplay();
             display.setTextColor(SSD1306_WHITE);
             display.setTextSize(1);
             display.setCursor(0, 0);
             display.println(F("MODULE STATUS"));
             display.println();
-            display.printf("MPU9250: %s\n", mpu9250::isConnected() ? "OK" : "NOT CONNECTED");
-            display.printf("GPS    : %s\n", gps::isConnected() ? "OK" : "NOT CONNECTED");
-            display.printf("LoRa   : %s\n", lora::isConnected() ? "OK" : "NOT CONNECTED");
+            display.printf("MPU9250: %s\n", mpu9250::isConnected() ? "OK" : "NOT FOUND");
+            display.printf("GPS    : %s\n", gps::isConnected() ? "OK" : "NOT FOUND");
+            display.printf("LoRa   : %s\n", lora::isConnected() ? "OK" : "NOT FOUND");
+            display.println();
+            display.printf("MAC:%s\n", mac); // 21 chars = 126 px, fits exactly
             display.display();
         }
 
